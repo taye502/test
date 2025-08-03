@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clickable Stopwatch</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: black;
+        color: white;
+        font-family: 'Helvetica Neue', sans-serif;
+        font-size: 10vw; /* ビューポートに応じたフォントサイズ */
+        cursor: pointer;
+        text-align: center;
+        user-select: none; /* テキスト選択を無効に */
+    }
+</style>
+</head>
+<body>
+
+<div id="timer">00:00:00</div>
+
+<script>
+    const timerDisplay = document.getElementById('timer');
+    let startTime = 0;
+    let elapsedTime = 0;
+    let timerInterval;
+    let timerState = 'stopped'; // 'stopped', 'running'
+
+    function formatTime(ms) {
+        let totalSeconds = Math.floor(ms / 1000);
+        let hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
+        let minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
+        let seconds = (totalSeconds % 60).toString().padStart(2, '0');
+        return `${hours}:${minutes}:${seconds}`;
+    }
+
+    function startTimer() {
+        startTime = Date.now() - elapsedTime;
+        timerInterval = setInterval(() => {
+            elapsedTime = Date.now() - startTime;
+            timerDisplay.textContent = formatTime(elapsedTime);
+        }, 1000);
+        timerState = 'running';
+    }
+
+    function stopTimer() {
+        clearInterval(timerInterval);
+        timerState = 'stopped';
+    }
+
+    function resetTimer() {
+        stopTimer();
+        elapsedTime = 0;
+        timerDisplay.textContent = formatTime(0);
+    }
+
+    document.body.addEventListener('click', () => {
+        if (timerState === 'stopped') {
+            if (elapsedTime > 0) {
+                // 停止状態からクリックされたらリセット
+                 resetTimer();
+            } else {
+                // 完全な初期状態ならスタート
+                startTimer();
+            }
+        } else if (timerState === 'running') {
+            stopTimer();
+        }
+    });
+</script>
+</body>
+</html>
