@@ -19,7 +19,7 @@
         cursor: pointer;
         text-align: center;
         user-select: none; /* テキスト選択を無効に */
-        transition: background-color 0.5s ease; /* 背景色の変化を滑らかに */
+        transition: background-color 0.3s ease; /* 背景色の変化を滑らかに */
     }
 
     .running {
@@ -48,19 +48,21 @@
     }
 
     function startTimer() {
+        if (timerState === 'running') return; // 既に動いていれば何もしない
         startTime = Date.now() - elapsedTime;
         timerInterval = setInterval(() => {
             elapsedTime = Date.now() - startTime;
             timerDisplay.textContent = formatTime(elapsedTime);
         }, 1000);
         timerState = 'running';
-        body.classList.add('running'); // 開始時にbodyのクラスを変更
+        body.classList.add('running');
     }
 
     function stopTimer() {
+        if (timerState === 'stopped') return; // 既に止まっていれば何もしない
         clearInterval(timerInterval);
         timerState = 'stopped';
-        body.classList.remove('running'); // 停止時にbodyのクラスを削除
+        body.classList.remove('running');
     }
 
     function resetTimer() {
@@ -69,19 +71,18 @@
         timerDisplay.textContent = formatTime(0);
     }
 
+    // シングルクリックで開始／停止
     body.addEventListener('click', () => {
-        if (timerState === 'stopped') {
-            if (elapsedTime > 0) {
-                // 停止状態からクリックされたらリセット
-                 resetTimer();
-                 body.classList.remove('running'); // リセット時も背景色を戻す
-            } else {
-                // 完全な初期状態ならスタート
-                startTimer();
-            }
-        } else if (timerState === 'running') {
+        if (timerState === 'running') {
             stopTimer();
+        } else {
+            startTimer();
         }
+    });
+
+    // ダブルクリックでリセット
+    body.addEventListener('dblclick', () => {
+        resetTimer();
     });
 </script>
 </body>
