@@ -39,6 +39,10 @@
     let timerInterval;
     let timerState = 'stopped'; // 'stopped', 'running'
 
+    // クリック判定用の変数を追加
+    let clickTimeout = null;
+    let clickCount = 0;
+
     function formatTime(ms) {
         let totalSeconds = Math.floor(ms / 1000);
         let hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
@@ -48,7 +52,7 @@
     }
 
     function startTimer() {
-        if (timerState === 'running') return; // 既に動いていれば何もしない
+        if (timerState === 'running') return;
         startTime = Date.now() - elapsedTime;
         timerInterval = setInterval(() => {
             elapsedTime = Date.now() - startTime;
@@ -59,7 +63,7 @@
     }
 
     function stopTimer() {
-        if (timerState === 'stopped') return; // 既に止まっていれば何もしない
+        if (timerState === 'stopped') return;
         clearInterval(timerInterval);
         timerState = 'stopped';
         body.classList.remove('running');
@@ -71,18 +75,27 @@
         timerDisplay.textContent = formatTime(0);
     }
 
-    // シングルクリックで開始／停止
+    // クリックイベントの処理を修正
     body.addEventListener('click', () => {
-        if (timerState === 'running') {
-            stopTimer();
-        } else {
-            startTimer();
-        }
-    });
+        clickCount++;
 
-    // ダブルクリックでリセット
-    body.addEventListener('dblclick', () => {
-        resetTimer();
+        if (clickCount === 1) {
+            // 1回目のクリックでは、少し待ってシングルクリックかダブルクリックか判定
+            clickTimeout = setTimeout(() => {
+                // 待っても2回目のクリックがなければ、シングルクリックと判定
+                if (timerState === 'running') {
+                    stopTimer();
+                } else {
+                    startTimer();
+                }
+                clickCount = 0; // カウントをリセット
+            }, 250); // 250ミリ秒待つ
+        } else if (clickCount === 2) {
+            // 250ミリ秒以内に2回目のクリックがあれば、ダブルクリックと判定
+            clearTimeout(clickTimeout); // シングルクリックの処理をキャンセル
+            resetTimer(); // リセット処理を実行
+            clickCount = 0; // カウントをリセット
+        }
     });
 </script>
 </body>
